@@ -57,11 +57,12 @@ async function getPostContent(articleContent) {
  * @param {string} folderName - The name of the repo folder
  * @param {string} fileName - The name of the file to create
  * @param {string} content - The content to write to the file
+ * @param {string} blogPostsFolder - The folder path where blog posts are stored
  * @return {Promise<void>}
  */
-async function createMdFile(folderName, fileName, content) {
+async function createMdFile(folderName, fileName, content, blogPostsFolder) {
     try {
-        const tempFilePath = path.join(os.tmpdir(), folderName, fileName);
+        const tempFilePath = path.join(os.tmpdir(), folderName, blogPostsFolder, fileName);
         console.log({ tempFilePath });
         fs.writeFileSync(tempFilePath, content, "utf8");
         return tempFilePath;
@@ -97,13 +98,13 @@ async function cloneRepo(userName, repoName) {
  * Commits the specified file to a GitHub repository.
  * @async
  * @param {string} repoName - The name of the repository 
- * @param {string} fileName - The name of the file to commit
+ * @param {string} fileShortPath - The short path tp the file to commit
  * @return {Promise<number>} 200 if successful, otherwise if there is an error
  */
-async function commitFile(repoName, fileName) {
+async function commitFile(repoName, fileShortPath) {
     try {
         const localRepoPath = path.join(os.tmpdir(), repoName);
-        const filePath = path.join(localRepoPath, fileName);
+        const filePath = path.join(localRepoPath, fileShortPath);
 
         await git(localRepoPath)
             .add(filePath)
@@ -125,10 +126,9 @@ async function test() {
     console.log("starting test function");
     const cloned = await cloneRepo("y0av", "blog.berry");
     console.log("cloned repo:", cloned);
-    const f = await createMdFile("blog.berry", "test.md", "Hello, file!");
-    console.log("created file:", f);
-    await commitFile("blog.berry", "test.md");
+    const fileShortPath = await createMdFile("blog.berry", "test.md", "Hello, file!", "src/content/blog");
+    console.log("created file:", fileShortPath);
+    await commitFile("blog.berry", fileShortPath);
     console.log("done test function");
 }
-test();
-// getPostContent();
+// test();
